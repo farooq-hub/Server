@@ -1,7 +1,16 @@
 const express = require('express')
-require('dotenv').config();
+const dotenv = require("dotenv");
+const connectDB = require("./config/db")
+const morgan = require('morgan');
 
 
-const app = express()
+connectDB()
+dotenv.config();
+const port = process.env.PORT || 4000;
+const app = express();
 
+app.use(morgan('dev'))
+// app.use(morgan('tiny'))
+
+app.listen(port,() => console.log(`server is ranning in port ${port}`) );
 
