@@ -5,6 +5,10 @@ const morgan = require('morgan');
 const cors = require('cors');
 const app = express();
 const userRouter = require('./routes/userRoute');
+const adminRouter = require('./routes/adminRoute');
+const providerRouter = require('./routes/providerRoute');
+
+
 
 
 
@@ -15,7 +19,8 @@ app.use(morgan('dev'))
 app.use(express.json());
 app.use(cors());
 
-
+app.use("/provider", providerRouter);
+app.use("/admin", adminRouter);
 app.use("/", userRouter);
 
 

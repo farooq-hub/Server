@@ -56,7 +56,48 @@ const login = async (req,res)=>{
     }
 }
 
+
+const allUsers =async (req,res)=>{
+    try {
+        const userData = await User.find();
+        res.status(200).json({ userData });
+    } catch (error) {
+        res.status(504).json({ errMsg: "Gateway time-out" });
+    }
+}
+
+const blockUser =async (req,res)=>{
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId);
+        if (!user) return res.status(400).json({ errMsg: 'User Not Found' })
+        user.isBanned = true;
+        await user.save()
+        res.status(200).json({ msg: 'Unblocked Successfully' })
+    } catch (error) {
+        res.status(500).json({ errMsg: "Gateway time-out" });
+    }
+}
+
+const unBlockUser =async (req,res)=>{
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId);
+        if (!user) return res.status(400).json({ errMsg: 'User Not Found' })
+        user.isBanned = false;
+        await user.save()
+        res.status(200).json({ msg: 'Unblocked Successfully' })
+    } catch (error) {
+        res.status(500).json({ errMsg: "Gateway time-out" });
+    }
+}
+
+
+
 module.exports = {
     signup,
-    login
+    login,
+    allUsers,
+    blockUser,
+    unBlockUser
 }
