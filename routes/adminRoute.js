@@ -3,7 +3,7 @@ const { login} = require('../controllers/admin');
 const { verifyTokenAdmin } = require('../middlewares/auth');
 const { serviceList,addService } = require('../controllers/service');
 const { allUsers,blockUser,unBlockUser } = require('../controllers/user');
-const { providerList, blockProvider, unBlockProvider } = require('../controllers/provider');
+const { providerList, blockProvider, unBlockProvider, confirmProvider } = require('../controllers/provider');
 
 
 const multer = require('../config/multer');
@@ -20,6 +20,7 @@ adminRoute.patch('/unBlockUser/:userId',verifyTokenAdmin,unBlockUser);
 adminRoute.get('/serviceList',verifyTokenAdmin,serviceList);
 adminRoute.post('/addService', upload.single('file'), verifyTokenAdmin,addService);
 adminRoute.get('/providerList',verifyTokenAdmin,providerList);
+adminRoute.patch('/confirmProvider/:providerId',confirmProvider);
 adminRoute.patch('/blockProvider/:providerId', verifyTokenAdmin, blockProvider);
 adminRoute.patch('/unBlockProvider/:providerId', verifyTokenAdmin, unBlockProvider);
 

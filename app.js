@@ -10,8 +10,6 @@ const providerRouter = require('./routes/providerRoute');
 
 
 
-
-
 connectDB()
 dotenv.config();
 app.use(morgan('dev'))

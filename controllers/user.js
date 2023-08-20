@@ -56,7 +56,6 @@ const login = async (req,res)=>{
     }
 }
 
-
 const allUsers =async (req,res)=>{
     try {
         const userData = await User.find();
@@ -65,6 +64,21 @@ const allUsers =async (req,res)=>{
         res.status(504).json({ errMsg: "Gateway time-out" });
     }
 }
+
+const otpLogin = async (req,res)=>{
+    try {
+        const {phone} = req.body;
+        const user = await User.findOne({ phone});
+        if (!user) return res.status(401).json({ errMsg: "User not found" });
+        if(user.isBanned) return res.status(401).json({errMsg:"You are blocked"});
+        const token = generateToken(user._id,'user')
+
+        res.status(200).json({ msg: 'Login succesfull', name: user?.name, token, role: 'user' })
+    } catch (error) {
+        res.status(504).json({ errMsg: "Gateway time-out" });
+    }
+}
+
 
 const blockUser =async (req,res)=>{
     try {
@@ -94,9 +108,11 @@ const unBlockUser =async (req,res)=>{
 
 
 
+
 module.exports = {
     signup,
     login,
+    otpLogin,
     allUsers,
     blockUser,
     unBlockUser
