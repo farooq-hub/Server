@@ -64,7 +64,7 @@ const confirmProvider =async (req,res) => {
     try {
         const {providerId} = req.params;
         console.log(providerId);
-        const provider = await Provider.findById({providerId})
+        const provider = await Provider.findById({_id:providerId})
         if(!provider) return res.status(400).json({errMsg:'Provider not found'})
         provider.adminConfirmed = true;
         await provider.save();
@@ -78,6 +78,7 @@ const confirmProvider =async (req,res) => {
 const providerList =async (req,res)=>{
     try {
         const providerData = await Provider.find().populate('services').sort({isUpgraded:-1});
+        console.log('');
         res.status(200).json({providerData});
     } catch (error) {
         res.status(504).json({ errMsg: "Gateway time-out" });

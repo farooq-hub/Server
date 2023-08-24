@@ -6,12 +6,12 @@ let msg, errMsg;
 
 const signup = async(req,res) =>{
     try {
-        const { name, email, phone, password,referalCode } = req.body;
+        const { name, email, phone, password,referralCode } = req.body;
         const exsistingUser = await User.findOne({ $or: [{ email }, { phone }] });
         if (exsistingUser) return res.status(409).json({ errMsg: "User already found" });
 
-        if(referalCode){
-            const referealUser = await User.findOne({referalNumber:referalCode});
+        if(referralCode){
+            const referealUser = await User.findOne({referalNumber:referralCode});
             if(!referealUser) return res.status(200).json({errMsg:"Invalid referal code"});
 
             referealUser.wallet += 50;
@@ -24,7 +24,6 @@ const signup = async(req,res) =>{
         const timestampPart = timestamp.toString().slice(-4);
         const randomNumPart = randomNum.toString().padStart(3, '0');
         const referalNumber = `#${timestampPart}${randomNumPart}`;
-        console.log(exsistingUser,'ddfjfjfjdfjdj');
         const newUser = new User({
             name,
             phone,
@@ -64,6 +63,27 @@ const allUsers =async (req,res)=>{
         res.status(504).json({ errMsg: "Gateway time-out" });
     }
 }
+
+const profileDetails = async (req,res)=>{
+    try {
+        const userData = await User.find({_id:req.payload.id});
+        userData ? res.status(200).json({ userData }) : res.status(400).json({ errMsg:'User not found'});
+    } catch (error) {
+        res.status(504).json({ errMsg: "Gateway time-out" });
+    }
+}
+
+
+const editUser = async (req,res)=>{
+    try {   
+        const {name,email,place} = req.body
+        const userData = await User.updateOne(req.payload.id);
+        userData ? res.status(200).json({ userData }) : res.status(400).json({ errMsg:'User not found'});
+    } catch (error) {
+        res.status(504).json({ errMsg: "Gateway time-out" });
+    }
+}
+
 
 const otpLogin = async (req,res)=>{
     try {
@@ -115,5 +135,7 @@ module.exports = {
     otpLogin,
     allUsers,
     blockUser,
-    unBlockUser
+    unBlockUser,
+    profileDetails,
+    editUser
 }
