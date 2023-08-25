@@ -2,7 +2,6 @@ const Services = require('../models/service')
 const cloudinary = require('../config/cloudinary')
 const mime = require("mime-types");
 const fs = require("fs");
-const { log } = require('console');
 
 
 let msg,errMsg;

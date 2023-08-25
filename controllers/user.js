@@ -1,5 +1,9 @@
 const User = require('../models/user');
 const sha256 = require('js-sha256');
+const fs = require('fs');
+const cloudinary = require('../config/cloudinary')
+const mime = require("mime-types");
+
 const { generateToken } = require('../middlewares/auth');
 
 let msg, errMsg;
@@ -75,11 +79,25 @@ const profileDetails = async (req,res)=>{
 
 
 const editUser = async (req,res)=>{
+    const {file,body:{name,email,place}} = req
     try {   
-        const {name,email,place} = req.body
-        const userData = await User.updateOne(req.payload.id);
-        userData ? res.status(200).json({ userData }) : res.status(400).json({ errMsg:'User not found'});
+        console.log(req.body,file);
+        let image;
+        const mimeType = mime.lookup(file.originalname);
+        if(mimeType && mimeType.includes("image/")) {
+            console.log(process.env.CLOUDINARY_API_KEY);
+            const upload = await cloudinary.uploader.upload(file?.path)
+            image = upload.secure_url;
+            fs.unlinkSync(file.path)
+        }else{
+            fs.unlinkSync(file.path)
+            if(exsistingService) return res.status(400).json({errMsg : 'This file not a image',status:false})
+        }
+        const userData = await User.findByIdAndUpdate({_id:req.payload.id},{$set:{name:name,email:email,place:place,image:image}});
+        console.log(userData);
+        userData ? res.status(200).json({msg:'Profile updated successfully', userData }) : res.status(400).json({ errMsg:'User not found'});
     } catch (error) {
+        if(file)fs.unlinkSync(file?.path);
         res.status(504).json({ errMsg: "Gateway time-out" });
     }
 }
