@@ -11,7 +11,10 @@ const serviceSchema = new mongoose.Schema({
         type:String,
         required:true,
 
-    }
+    },
+    description:{
+        type:String,
+    },
 });
 
 

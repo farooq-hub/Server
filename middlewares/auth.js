@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user')
+const Provider = require('../models/provider')
 let errMsg;
 
 const generateToken = (id,role) => {
@@ -58,8 +59,37 @@ const verifyTokenUser = async (req, res, next) => {
     }
 }
 
+const verifyTokenProvider = async (req, res, next) => {
+    try {        
+        let token = req.headers['authorization'];
+        console.log(token);
+
+        if (!token) {
+            return res.status(403).json({ errMsg: "Access Denied" });
+        }          
+        if (token.startsWith('Bearer ')) {
+            token = token.slice(7, token.length).trimLeft();
+        }
+        const verified = jwt.verify(token, process.env.TOKEN_SECRT);
+      
+        req.payload = verified;
+        const provider = await Provider.findById(req.payload.id);
+        console.log(provider.isBanned);
+        if (provider.isBanned || !provider.adminConfirmed) {
+            return res.status(403).json({ errMsg: "Access Denied" }); 
+        }else if (req.payload.role === 'provider') {
+            next() 
+        } else {
+            return res.status(403).json({ errMsg: "Access Denied" });
+        }
+    } catch (err) {
+        console.log("p");
+        res.status(500).json({ errMsg: "Server Down" });
+    }
+}
 module.exports = {
     generateToken,
     verifyTokenAdmin,
-    verifyTokenUser
+    verifyTokenUser,
+    verifyTokenProvider
 }

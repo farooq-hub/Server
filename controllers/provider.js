@@ -1,6 +1,9 @@
 const Provider = require('../models/provider')
 const sha256 = require('js-sha256');
 const { generateToken } = require('../middlewares/auth');
+const fs = require('fs');
+const cloudinary = require('../config/cloudinary')
+const mime = require("mime-types");
 let errMsg,msg;
 
 const signup =async (req,res) => {
@@ -85,6 +88,69 @@ const providerList =async (req,res)=>{
     }
 }
 
+const profileDetails = async (req,res)=>{
+    try {
+        const providerData = await Provider.findOne({_id:req.payload.id}).populate('services');
+        console.log(providerData);
+        providerData ? res.status(200).json({ providerData }) : res.status(400).json({ errMsg:'Provider not found'});
+    } catch (error) {
+        res.status(504).json({ errMsg: "Server error!!!" });
+    }
+}
+
+
+const editProvider = async (req,res)=>{
+    const {name,email,places,services,description} = req.body
+    const profilePic = req.files.profilePic?req.files.profilePic[0]:null;
+    const coverPic = req.files.coverPic?req.files.coverPic[0]:null
+    console.log(req.body,profilePic,coverPic,req.files['profilePic']);
+    try {   
+        let dpPic;
+        let bgPic;
+        if(profilePic){
+            const mimeType = mime.lookup(profilePic.originalname);
+            if(mimeType && mimeType.includes("image/")) {
+                const upload = await cloudinary.uploader.upload(profilePic?.path)
+                dpPic = upload.secure_url;
+                if (fs.existsSync(profilePic.path))fs.unlinkSync(profilePic.path);
+            }else{
+                if (fs.existsSync(profilePic.path))fs.unlinkSync(profilePic.path);
+                return res.status(400).json({errMsg : 'This file not a image',status:false})
+            }
+        }
+        if(coverPic){
+            const mimeType = mime.lookup(coverPic.originalname);
+            if(mimeType && mimeType.includes("image/")) {
+                const upload = await cloudinary.uploader.upload(coverPic?.path)
+                bgPic = upload.secure_url;
+                if (fs.existsSync(coverPic.path))fs.unlinkSync(coverPic.path);
+            }else{
+                if (fs.existsSync(coverPic.path))fs.unlinkSync(coverPic.path);
+                return res.status(400).json({errMsg : 'This file not a image',status:false})
+            }
+        }
+        console.log(bgPic,dpPic);
+        const providerData = await Provider.findByIdAndUpdate({_id:req.payload.id},
+            {$set:{name:name,email:email,places:places,services:services,description:description,profilePic:dpPic,coverPic:bgPic}});
+            providerData.name =name?name:providerData.name
+            providerData.email =email?email:providerData.email  
+            providerData.places =places?places:providerData.places  
+            providerData.services =services?services:providerData.services
+            providerData.description =description?description:providerData.description  
+            providerData.profilePic =dpPic?dpPic:providerData.profilePic  
+            providerData.coverPic =bgPic?bgPic:providerData.coverPic  
+
+        console.log(providerData),'hjvshavsjhvasjhvajshvajhsvjahvsjhasvjhasvjhavjhasvjha',providerData.services;
+        providerData ? res.status(200).json({msg:'Profile updated successfully', providerData,bgPic,dpPic }) : res.status(400).json({ errMsg:'User not found'});
+    } catch (error) {
+        if(profilePic)if (fs.existsSync(profilePic.path))fs.unlinkSync(profilePic.path);
+        if(coverPic) if (fs.existsSync(coverPic.path))fs.unlinkSync(coverPic.path);
+        ;
+
+        res.status(504).json({ errMsg: "Gateway time-out" });
+    }
+}
+
 
 const blockProvider =async (req,res)=>{
     try {
@@ -97,7 +163,7 @@ const blockProvider =async (req,res)=>{
 
         res.status(200).json({ msg: 'Unblocked Successfully' })
     } catch (error) {
-        res.status(504).json({ errMsg: "Gateway time-out" });
+        res.status(504).json({ errMsg: "Server error!!!" });
     }
 }
 
@@ -124,6 +190,8 @@ module.exports = {
     otpLogin,
     confirmProvider,
     providerList,
+    profileDetails,
+    editProvider,
     blockProvider,
     unBlockProvider
 }

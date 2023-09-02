@@ -12,7 +12,7 @@ userRouter.post('/login',login);
 userRouter.post('/otpLogin',otpLogin);
 userRouter.get('/profile',verifyTokenUser,profileDetails);
 
-userRouter.patch('/editProfile', upload.single('file'),verifyTokenUser,editUser)
+userRouter.patch('/editProfile',upload.single('file'),verifyTokenUser,editUser)
 
 
 
