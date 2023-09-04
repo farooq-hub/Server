@@ -39,7 +39,7 @@ const login = async (req,res)=>{
         if(!provider.adminConfirmed) return res.status(401).json({errMsg:"You are'nt confirmed by admin"});
         const token = generateToken(provider._id,'provider')
 
-        res.status(200).json({ msg: 'Login succesfull', name: provider?.name, token, role: 'provider' })
+        res.status(200).json({ msg: 'Login succesfull', name: provider?.name, token, role: 'provider' ,providerId:provider._id})
     } catch (error) {
         console.log(error);
         res.status(504).json({ errMsg: "Gateway time-out" });
@@ -101,6 +101,7 @@ const profileDetails = async (req,res)=>{
 
 const editProvider = async (req,res)=>{
     const {name,email,places,services,description} = req.body
+    const lowerCaseName = name.toLowerCase();
     const profilePic = req.files.profilePic?req.files.profilePic[0]:null;
     const coverPic = req.files.coverPic?req.files.coverPic[0]:null
     console.log(req.body,profilePic,coverPic,req.files['profilePic']);
@@ -131,8 +132,8 @@ const editProvider = async (req,res)=>{
         }
         console.log(bgPic,dpPic);
         const providerData = await Provider.findByIdAndUpdate({_id:req.payload.id},
-            {$set:{name:name,email:email,places:places,services:services,description:description,profilePic:dpPic,coverPic:bgPic}});
-            providerData.name =name?name:providerData.name
+            {$set:{name:lowerCaseName,email:email,places:places,services:services,description:description,profilePic:dpPic,coverPic:bgPic}});
+            providerData.name =name?lowerCaseName:providerData.name
             providerData.email =email?email:providerData.email  
             providerData.places =places?places:providerData.places  
             providerData.services =services?services:providerData.services

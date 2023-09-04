@@ -4,6 +4,7 @@ const { signup,login, profileDetails, editProvider } = require('../controllers/p
 const { verifyTokenProvider } = require('../middlewares/auth');
 
 const multer = require('../config/multer');
+const { postsList, addPost, deletePost } = require('../controllers/posts');
 const upload = multer.createMulter();
 const providerRoute= express.Router();
 
@@ -12,7 +13,12 @@ providerRoute.post('/login',login);
 
 providerRoute.get('/serviceList',serviceList);
 providerRoute.get('/profile',verifyTokenProvider,profileDetails);
-providerRoute.patch('/editProfile', upload.fields([{ name: 'profilePic' }, { name: 'coverPic' }]),verifyTokenProvider,editProvider)
+providerRoute.patch('/editProfile',verifyTokenProvider,upload.fields([{ name: 'profilePic' }, { name: 'coverPic' }]),editProvider)
+
+providerRoute.get('/postsList',verifyTokenProvider,postsList)
+providerRoute.post('/addPost',verifyTokenProvider,upload.single('postImages[0]'),addPost)
+providerRoute.delete('/Post/:postId',verifyTokenProvider,deletePost)
+
 
 
 

@@ -18,8 +18,8 @@ adminRoute.get('/userList',verifyTokenAdmin,allUsers);
 adminRoute.patch('/blockUser/:userId',verifyTokenAdmin,blockUser);
 adminRoute.patch('/unBlockUser/:userId',verifyTokenAdmin,unBlockUser);
 adminRoute.get('/serviceList',verifyTokenAdmin,serviceList);
-adminRoute.post('/addService', upload.single('file'), verifyTokenAdmin,addService);
-adminRoute.patch('/services', upload.single('file'), verifyTokenAdmin,editServices);
+adminRoute.post('/addService', verifyTokenAdmin, upload.single('file'),addService);
+adminRoute.patch('/services', verifyTokenAdmin, upload.single('file'),editServices);
 // adminRoute.patch('/flagSarvices',verifyTokenAdmin,flagServices)
 
 adminRoute.get('/providerList',verifyTokenAdmin,providerList);
