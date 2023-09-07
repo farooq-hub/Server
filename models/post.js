@@ -41,6 +41,7 @@ const postSchema = new mongoose.Schema({
         type: Date,
         default: Date.now()
     },
+    isBanned: { type: Boolean, default: false },
     reports : [{
         type: mongoose.Schema.Types.ObjectId,
         ref:'users',

@@ -1,6 +1,5 @@
 const Post = require('../models/post')
 const cloudinary = require('../config/cloudinary')
-const mime = require("mime-types");
 const fs = require("fs");
 
 let msg,errMsg;
@@ -18,40 +17,73 @@ const postsList =async (req,res)=>{
 
 
 const addPost = async (req, res) => {
-        console.log(req.body,'sjhshsh');
-        const { files, body: { providerId,caption,tagline } } = req;
+    const { files, body: { caption, tagline } } = req;
+    const { id } = req.payload;
+    console.log(files,caption,tagline);
+
     try {
-        // let images = [];
-        // // console.log(providerId,caption,tagline,file);
-        // if(!files.length == 0) return res.status(400).json({errMsg : 'Image needed'})
-        // if(!caption) return res.status(400).json({errMsg : 'caption needed'})  
-
-        // const mimeType = mime.lookup(files.originalname);
-        // if(mimeType && mimeType.includes("image/")) {
-        // //     console.log(process.env.CLOUDINARY_API_KEY);
-        //     for(let i=0 ;i<=files.length ;i++){
-        //         const upload = await cloudinary.uploader.upload(files[i]?.path)
-        //         images.push(upload.secure_url)
-        //         if (fs.existsSync(files[i].path))fs.unlinkSync(files[i].path);
-        //     }
-        // }else{
-        //     // fs.unlinkSync(file.path)
-        //     if(exsistingService) return res.status(400).json({errMsg : 'This file not a image',status:false})
-        // }
-        // // const newService =await new Services({
-        // //     serviceName,
-        // //     serviceImage:image       
-        // // }).save()
-
-        // // res.status(200)?.json({ newService});
-
-   } catch (error) {
+        let postImages = [];
+        if(!files) return res.status(400).json({errMsg : 'Image needed'})
+        if(!caption) return res.status(400).json({errMsg : 'caption needed'})  
+        if(files){
+            for await (const file of files){
+                const upload = await cloudinary.uploader.upload(file.path)
+                postImages.push(upload.secure_url)
+                if (fs.existsSync(file.path))fs.unlinkSync(file.path);
+            }
+        }
+        const newPost = new Post({
+            providerId: id,
+            caption,
+            tagline,
+            postImages,       
+        })
+        console.log(newPost);
+        await newPost.save();
+        res.status(200)?.json({ newPost ,msg:"post upload successfully"});
+    } catch (error) {
+        if(files){
+            for await (const file of files)if (fs.existsSync(file.path))fs.unlinkSync(file.path);
+        }
         console.log(error);
         res.status(500).json({errMsg:'Server Error'});
-    //    fs.unlinkSync(file?.path);
    }
 }
 
+
+const postDetails = async (req, res) => {
+
+    const { postId } = req.query;
+    console.log(postId);
+
+    try {
+        let postImages = [];
+        if(!files) return res.status(400).json({errMsg : 'Image needed'})
+        if(!caption) return res.status(400).json({errMsg : 'caption needed'})  
+        if(files){
+            for await (const file of files){
+                const upload = await cloudinary.uploader.upload(file.path)
+                postImages.push(upload.secure_url)
+                if (fs.existsSync(file.path))fs.unlinkSync(file.path);
+            }
+        }
+        const newPost = new Post({
+            providerId: id,
+            caption,
+            tagline,
+            postImages,       
+        })
+        console.log(newPost);
+        await newPost.save();
+        res.status(200)?.json({ newPost ,msg:"post upload successfully"});
+    } catch (error) {
+        if(files){
+            for await (const file of files)if (fs.existsSync(file.path))fs.unlinkSync(file.path);
+        }
+        console.log(error);
+        res.status(500).json({errMsg:'Server Error'});
+   }
+}
 
 const deletePost =async (req,res)=>{
     try {

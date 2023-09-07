@@ -15,9 +15,11 @@ providerRoute.get('/serviceList',serviceList);
 providerRoute.get('/profile',verifyTokenProvider,profileDetails);
 providerRoute.patch('/editProfile',verifyTokenProvider,upload.fields([{ name: 'profilePic' }, { name: 'coverPic' }]),editProvider)
 
-providerRoute.get('/postsList',verifyTokenProvider,postsList)
-providerRoute.post('/addPost',verifyTokenProvider,upload.single('postImages[0]'),addPost)
+providerRoute.get('/post',verifyTokenProvider,postsList)
+providerRoute.post('/post',verifyTokenProvider,upload.array("postImages", 10),addPost)
 providerRoute.delete('/Post/:postId',verifyTokenProvider,deletePost)
+providerRoute.delete('/post-details',verifyTokenProvider)
+
 
 
 

@@ -28,6 +28,7 @@ const providerSchema = new mongoose.Schema({
         required: true,
         type: Array,
     },
+    location: { type: String },
     services: {
         type: Array,
         ref: 'services',

@@ -31,7 +31,7 @@ const signup =async (req,res) => {
 const login = async (req,res)=>{
     try {
         const { phone, password } = req.body;
-        const provider = await Provider.findOne({phone});
+        const provider = await Provider.findOne({phone}).populate('services');
         if (!provider) return res.status(401).json({ errMsg: "Provider not found" });
         const passwordCheck =  provider.password == sha256(password + process.env.PASSWORD_SALT);
         if (!passwordCheck) return res.status(401).json({ errMsg: "Password doesn't match" });
@@ -39,7 +39,7 @@ const login = async (req,res)=>{
         if(!provider.adminConfirmed) return res.status(401).json({errMsg:"You are'nt confirmed by admin"});
         const token = generateToken(provider._id,'provider')
 
-        res.status(200).json({ msg: 'Login succesfull', name: provider?.name, token, role: 'provider' ,providerId:provider._id})
+        res.status(200).json({ msg: 'Login succesfull', providerData:provider, token, role: 'provider' })
     } catch (error) {
         console.log(error);
         res.status(504).json({ errMsg: "Gateway time-out" });
@@ -100,7 +100,7 @@ const profileDetails = async (req,res)=>{
 
 
 const editProvider = async (req,res)=>{
-    const {name,email,places,services,description} = req.body
+    const {name,email,places,services,description,location} = req.body
     const lowerCaseName = name.toLowerCase();
     const profilePic = req.files.profilePic?req.files.profilePic[0]:null;
     const coverPic = req.files.coverPic?req.files.coverPic[0]:null
@@ -132,10 +132,11 @@ const editProvider = async (req,res)=>{
         }
         console.log(bgPic,dpPic);
         const providerData = await Provider.findByIdAndUpdate({_id:req.payload.id},
-            {$set:{name:lowerCaseName,email:email,places:places,services:services,description:description,profilePic:dpPic,coverPic:bgPic}});
+            {$set:{name:lowerCaseName,email:email,places:places,services:services,description:description,profilePic:dpPic,coverPic:bgPic,location:location}});
             providerData.name =name?lowerCaseName:providerData.name
             providerData.email =email?email:providerData.email  
-            providerData.places =places?places:providerData.places  
+            providerData.places =places?places:providerData.places 
+            providerData.location =location?location:providerData.location  
             providerData.services =services?services:providerData.services
             providerData.description =description?description:providerData.description  
             providerData.profilePic =dpPic?dpPic:providerData.profilePic  
