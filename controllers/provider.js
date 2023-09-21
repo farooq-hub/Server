@@ -80,9 +80,9 @@ const confirmProvider =async (req,res) => {
 
 const providerList =async (req,res)=>{
     try {
-        const providerData = await Provider.find().populate('services').sort({isUpgraded:-1});
+        const providersData = await Provider.find().populate('services').sort({isUpgraded:-1});
         console.log('');
-        res.status(200).json({providerData});
+        res.status(200).json({providersData});
     } catch (error) {
         res.status(504).json({ errMsg: "Gateway time-out" });
     }

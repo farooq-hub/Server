@@ -53,7 +53,7 @@ const login = async (req,res)=>{
         if(user.isBanned) return res.status(401).json({errMsg:"You are blocked"});
         const token = generateToken(user._id,'user')
 
-        res.status(200).json({ msg: 'Login succesfull', name: user?.name, token, role: 'user' })
+        res.status(200).json({ msg: 'Login succesfull', name: user?.name, userData:user, token, role: 'user' })
     } catch (error) {
         res.status(504).json({ errMsg: "Gateway time-out" });
     }

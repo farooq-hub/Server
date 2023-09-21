@@ -7,6 +7,7 @@ const { providerList, blockProvider, unBlockProvider, confirmProvider } = requir
 
 
 const multer = require('../config/multer');
+const { postsList, postBann, commentList } = require('../controllers/posts');
 const upload = multer.createMulter();
 
 
@@ -26,6 +27,13 @@ adminRoute.get('/providerList',verifyTokenAdmin,providerList);
 adminRoute.patch('/confirmProvider/:providerId',verifyTokenAdmin,confirmProvider);
 adminRoute.patch('/blockProvider/:providerId', verifyTokenAdmin, blockProvider);
 adminRoute.patch('/unBlockProvider/:providerId', verifyTokenAdmin, unBlockProvider);
+
+adminRoute.route('/post')
+    .get(verifyTokenAdmin,postsList)
+    .patch(verifyTokenAdmin,postBann)
+
+adminRoute.route('/comment')
+    .get(verifyTokenAdmin,commentList)    
 
 
 

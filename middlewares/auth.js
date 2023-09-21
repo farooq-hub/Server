@@ -62,9 +62,7 @@ const verifyTokenUser = async (req, res, next) => {
 const verifyTokenProvider = async (req, res, next) => {
     try {        
         let token = req.headers['authorization'];
-        console.log(token,'xjjnxj',req.body);
-        console.log(req.body);
-
+        console.log(token,'xjjnxj','smbkjbf');
         if (!token) {
             return res.status(403).json({ errMsg: "Access Denied" });
         }          

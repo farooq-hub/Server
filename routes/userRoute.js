@@ -4,6 +4,7 @@ const { verifyTokenUser } = require('../middlewares/auth');
 
 const multer = require('../config/multer');
 const { providerList } = require('../controllers/provider');
+const { postsList, postLike, commentList, addComment, likeComment, deleteComment, postReport, allPost } = require('../controllers/posts');
 const upload = multer.createMulter();
 
 const   userRouter = express.Router();
@@ -15,6 +16,20 @@ userRouter.get('/profile',verifyTokenUser,profileDetails);
 userRouter.get('/providersList',providerList)
 
 userRouter.patch('/editProfile',verifyTokenUser,upload.single('file'),editUser)
+userRouter.get('/all-Post',verifyTokenUser,allPost)
+userRouter.route('/post')
+    .get(verifyTokenUser,postsList)
+    .patch(verifyTokenUser,postLike)
+
+userRouter.route('/comment')
+    .get(verifyTokenUser,commentList)
+    .post(verifyTokenUser,addComment)
+    .patch(verifyTokenUser,likeComment)
+    .delete(verifyTokenUser,deleteComment)
+
+userRouter.patch('/post/report',verifyTokenUser,postReport)
+
+
 
 
 
