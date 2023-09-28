@@ -8,6 +8,7 @@ const { providerList, blockProvider, unBlockProvider, confirmProvider } = requir
 
 const multer = require('../config/multer');
 const { postsList, postBann, commentList } = require('../controllers/posts');
+const { getOrderLists, getOrderData } = require('../controllers/order');
 const upload = multer.createMulter();
 
 
@@ -35,6 +36,8 @@ adminRoute.route('/post')
 adminRoute.route('/comment')
     .get(verifyTokenAdmin,commentList)    
 
+adminRoute.get('/orders',verifyTokenAdmin,getOrderLists)
+adminRoute.get('/order/:id',verifyTokenAdmin,getOrderData)
 
 
 

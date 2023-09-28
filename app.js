@@ -21,6 +21,24 @@ app.use("/provider", providerRouter);
 app.use("/admin", adminRouter);
 app.use("/", userRouter);
 
+ //CRON// 
+
+const { spawn } = require('child_process');
+
+const deleteExpiredSubscriptionsProcess = spawn('node', ['deleteExpiredSubscriptions.js']);
+
+deleteExpiredSubscriptionsProcess.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+});
+
+deleteExpiredSubscriptionsProcess.stderr.on('data', (data) => {
+    console.error(`stderr: ${data}`);
+});
+
+deleteExpiredSubscriptionsProcess.on('close', (code) => {
+    console.log(`Child process exited with code ${code}`);
+});
+
 
 const port = process.env.PORT || 4000;
 app.listen(port,() => console.log(`server is ranning in port ${port}`) );

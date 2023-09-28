@@ -38,6 +38,24 @@ const providerSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    walletHistory: [{
+        date: {
+            type: Date,
+            default: Date.now(),
+        },
+        amount: {
+            type: Number,
+            default: 0,
+        },
+        from: {
+            type: mongoose.Schema.Types.ObjectId,   
+            ref: 'users'
+        },
+        transactionType: {
+            type: String,
+            enum: ['Credit', 'Debit'],
+        }
+    }],
     isBanned: { type: Boolean, default: false },
     adminConfirmed: { type: Boolean, default: false },
     profilePic: { type: String },

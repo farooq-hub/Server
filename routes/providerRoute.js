@@ -5,7 +5,8 @@ const { verifyTokenProvider } = require('../middlewares/auth');
 
 const multer = require('../config/multer');
 const { postsList, addPost, deletePost, postLike, commentList, addComment, likeComment, deleteComment, updatePost, postReport } = require('../controllers/posts');
-const { addOption } = require('../controllers/option');
+const { addOption, getOptionList, optionFlag } = require('../controllers/option');
+const { getOrderLists, getOrderData } = require('../controllers/order');
 const upload = multer.createMulter();
 const providerRoute= express.Router();
 
@@ -29,12 +30,18 @@ providerRoute.route('/comment')
     .delete(verifyTokenProvider,deleteComment)
 
 providerRoute.route('/option')
-    .get(verifyTokenProvider)
-    .post(verifyTokenProvider,addOption)
-    // .patch(verifyTokenProvider,likeComment)
-    // .delete(verifyTokenProvider,deleteComment)
+providerRoute.route('/option')
+    .get(verifyTokenProvider,getOptionList)
+    .post(verifyTokenProvider,upload.array("optionImages", 10),addOption)
 
+providerRoute.patch('/option/flag',verifyTokenProvider,optionFlag)
 providerRoute.patch('/post/like',verifyTokenProvider,postLike)
+providerRoute.get('/orders',verifyTokenProvider,getOrderLists)
+providerRoute.get('/order/:id',verifyTokenProvider,getOrderData)
+
+// providerRoute.get('/orders',verifyTokenProvider,getOrderLists)
+
+
 
     
 

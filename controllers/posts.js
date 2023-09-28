@@ -12,7 +12,7 @@ const allPost =async (req,res) => {
         const { skip } = req.query;
         const noPost = false
         if(skip%10 == 0 ||skip == 0){
-            const postsList = await Post.find({isBanned:false}).populate('providerId').skip(skip).limit(10).sort({ _id:-1 });
+            const postsList = await Post.find({isBanned:false}).skip(skip).limit(10).sort({ _id:-1 }).populate('providerId');
             console.log(postsList);
             if(postsList.length == 0) noPost =true
             res.status(200).json({ postsList ,noPost});

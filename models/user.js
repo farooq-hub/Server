@@ -33,9 +33,26 @@ const userSchema = new mongoose.Schema(
         },
         wallet: {
             type: Number,
-            default:0,
+            default: 0,
         },
-        
+        walletHistory: [{
+            date: {
+                type: Date,
+                default: Date.now(),
+            },
+            amount: {
+                type: Number,
+                default: 0,
+            },
+            from: {
+                type: mongoose.Schema.Types.ObjectId,   
+                ref: 'provider'
+            },
+            transactionType: {
+                type: String,
+                enum: ['Credit', 'Debit'],
+            }
+        }],
         referalNumber: {
             type: String,
             trim: true,

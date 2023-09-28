@@ -79,11 +79,11 @@ const verifyTokenProvider = async (req, res, next) => {
         }else if (req.payload.role === 'provider') {
             next() 
         } else {
-            return res.status(403).json({ errMsg: "Access Denied" });
+            return res.status(403).json({ errMsg: "Access Denied"}); 
         }
     } catch (err) {
         console.log("p");
-        res.status(500).json({ errMsg: "Server Down" });
+        res.status(500).json({ errMsg: "Access Denied" });
     }
 }
 module.exports = {

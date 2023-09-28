@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const optionSchema = new mongoose.Schema({
-    tite:{
+    title:{
         type:String,
         required:true
     },
@@ -36,6 +36,7 @@ const optionSchema = new mongoose.Schema({
         default: Date.now()
     },
     isBanned: { type: Boolean, default: false },
+    isFlag: { type: Boolean, default: false }
 });
 
 
