@@ -2,6 +2,8 @@ const Stripe = require('stripe')
 const Order = require('../models/order')
 const Provider = require('../models/provider')
 const User = require('../models/user')
+const Admin = require('../models/admin');
+
 
 
 // const Razorpay = require('razorpay')
@@ -21,7 +23,7 @@ const getOrderLists =async (req,res) => {
     }else if(role == 'provider')orderList = await Order.find({providerId:id}).skip(skip).limit(10).sort({ orderCreatedAt:1 });
     else if(role == 'admin')orderList = await Order.find({}).skip(skip).limit(10).populate({path: 'providerId',select: 'name '}).sort({ orderCreatedAt:1 });
 
-    console.log(orderList,id);
+    // console.log(orderList,id);
     res.status(200).json({ orderList });
     
   } catch (error) {
@@ -32,19 +34,26 @@ const getOrderLists =async (req,res) => {
 
 const getOrderData =async (req,res) => {
 
-    const { id } = req.params;
-    if(id){
-        const orderData = await Order.findOne({_id:id})
-        .populate([{path:'providerId',select: 'name phone email location'},{
-          path: 'options.optionId',
-          populate :{
-            path: 'serviceId',
-            select:'serviceName'
-          }
-        }])
-        console.log(orderData);
-        res.status(200).json({ orderData });
+    try {
+      const { id } = req.params;
+      if(id){
+          const orderData = await Order.findOne({_id:id})
+          .populate({path:'providerId',select: 'name phone email location'})
+          .populate({
+            path: 'options.optionId',
+            populate :{
+              path: 'serviceId',
+              select:'serviceName'
+            }
+          })
+          // console.log(orderData);
+          orderData ? res.status(200).json({ orderData }) :res.status(504).json({ errMsg:'Somthig wrong' }) 
+      }
+    } catch (error) {
+      res.status(504).json({ errMsg:'Invalid Id Check the path' }) 
     }
+
+
 }
 
 
@@ -120,11 +129,19 @@ const paymentStatusHandle = async(req,res)=>{
         })
         const save = await order.save()
         if(save){
-          const price = Math.floor((orderDetails.grandTotal*90)/100)
-          const walletHistory = {date:new Date(),amount:price,from:orderDetails.customerId,transactionType:'Credit'}
+          const priceProvider = Math.floor((orderDetails.grandTotal*90)/100)
+          const priceAdmin = Math.floor((orderDetails.grandTotal*10)/100)
+          const walletHistoryProvider = {date:new Date(),amount:priceProvider,from:orderDetails.customerId,transactionType:'Credit'}
+          const walletHistoryAdmin = {date:new Date(),amount:priceAdmin,from:orderDetails.customerId,transactionType:'Credit'}
+          
           const updateProvider = await Provider.updateOne({_id:orderDetails.providerId},
-            {$inc:{wallet:price},$push:{walletHistory:walletHistory}})
-            return updateProvider && res.redirect(`${process.env.CLIENT_URL}/payments?status=true`)
+            {$inc:{wallet:priceProvider},$push:{walletHistory:walletHistoryProvider}})
+          
+            const updateAdmin = await Admin.updateOne({phone:process.env.ADMIN_NUMBER},
+            {$inc:{wallet:priceAdmin},$push:{walletHistory:walletHistoryAdmin}})
+
+          return updateProvider && updateAdmin && res.redirect(`${process.env.CLIENT_URL}/payments?status=true&id=${order._id}`)
+
         }else return res.redirect(`${process.env.CLIENT_URL}/payments?status=false&`)
     }else{
         return res.redirect(`${process.env.CLIENT_URL}/payments?status=false&`)
@@ -142,18 +159,28 @@ const cancelOrder = async (req,res) => {
     console.log(id);
     if(id){
       const date =new Date()
-      const cancel = await Order.findOneAndUpdate({_id:id},{$set:{status:'Canceled',orderCancelledAt:date}});
+      
+      const cancel = await Order.findOneAndUpdate({_id:id},{$set:{status:'Cancelled',orderCancelledAt:date}});
+
       if(!cancel) res.status(500).json({ errMsg: "Server error" ,status:false})
-      const price = Math.floor((cancel.grandTotal*90)/100)
+
+      const priceProvider = Math.floor((cancel.grandTotal*90)/100)
+      const priceAdmin = Math.floor((cancel.grandTotal*10)/100)
+
       const walletHistoryUser = {date:date,amount:cancel.grandTotal,from:cancel.providerId,transactionType:'Credit'}
-      const walletHistoryProvider = {date:date,amount:price,from:cancel.customerId,transactionType:'Debit'}
+      const walletHistoryProvider = {date:date,amount:priceProvider,from:cancel.customerId,transactionType:'Debit'}
+      const walletHistoryAdmin = {date:date,amount:priceProvider,from:cancel.customerId,transactionType:'Debit'}
 
       const userUpdate = await User.updateOne({_id:cancel.customerId},{$inc:{wallet:cancel.grandTotal},$push:{walletHistory:walletHistoryUser}});
-      const providerUpdate = await Provider.updateOne({_id:cancel.providerId},{$inc:{wallet:-price},$push:{walletHistory:walletHistoryProvider}});
-      console.log(id,cancel , userUpdate, providerUpdate);
-
-       userUpdate && providerUpdate ? res.status(200).json({ msg:'Order Cancelled successfully',status:true ,date})
-      :res.status(500).json({ errMsg: "Server error" ,status:false})
+      const providerUpdate = await Provider.updateOne({_id:cancel.providerId},{$inc:{wallet:-priceProvider},$push:{walletHistory:walletHistoryProvider}});
+      const adminUpdate = await Admin.updateOne({phone:process.env.ADMIN_NUMBER}, {
+          $inc: { wallet: -priceAdmin },
+          $push: { walletHistory: walletHistoryAdmin }
+        });
+    
+       userUpdate && providerUpdate && adminUpdate ? res.status(200).json({ msg:'Order Cancelled successfully',status:true ,date})
+      :res.status(500).json({ errMsg: "Server error",status:false})
+    
     }else{res.status(402).json({ errMsg: "Somthing wrong" ,status:false});}
     
   } catch (error) {

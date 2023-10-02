@@ -46,7 +46,7 @@ const signup = async(req,res) =>{
 const login = async (req,res)=>{
     try {
         const { phone, password } = req.body;
-        const user = await User.findOne({ phone});
+        const user = await User.findOne({ phone }, '-walletHistory');;
         if (!user) return res.status(401).json({ errMsg: "User not found" });
         const passwordCheck =  user.password == sha256(password + process.env.PASSWORD_SALT);
         if (!passwordCheck) return res.status(401).json({ errMsg: "Password doesn't match" });
@@ -70,9 +70,15 @@ const allUsers =async (req,res)=>{
 
 const profileDetails = async (req,res)=>{
     try {
-        const userData = await User.find({_id:req.payload.id});
+        const userData = await User.findOne({_id:req.payload.id}).populate({
+            path: 'walletHistory.from',
+            select:'name'
+          });
+        //   userData?userData.walletHistory = userData.walletHistory.slice(-5):res.status(400).json({ errMsg:'User not found'});
+          console.log(userData.walletHistory);
         userData ? res.status(200).json({ userData }) : res.status(400).json({ errMsg:'User not found'});
     } catch (error) {
+        console.log(error);
         res.status(504).json({ errMsg: "Gateway time-out" });
     }
 }
@@ -88,9 +94,9 @@ const editUser = async (req,res)=>{
                 console.log(process.env.CLOUDINARY_API_KEY);
                 const upload = await cloudinary.uploader.upload(file?.path)
                 image = upload.secure_url;
-                fs.unlinkSync(file.path)
+                if (fs.existsSync(file.path))fs.unlinkSync(file.path)
             }else{
-                fs.unlinkSync(file.path)
+                if (fs.existsSync(file.path))fs.unlinkSync(file.path)
                 return res.status(400).json({errMsg : 'This file not a image',status:false})
             }
         }
@@ -99,7 +105,7 @@ const editUser = async (req,res)=>{
         console.log(userData);
         userData ? res.status(200).json({msg:'Profile updated successfully', userData,image }) : res.status(400).json({ errMsg:'User not found'});
     } catch (error) {
-        if(file)fs.unlinkSync(file?.path);
+        if (fs.existsSync(file.path))fs.unlinkSync(file.path)
         res.status(504).json({ errMsg: "Gateway time-out" });
     }
 }

@@ -9,7 +9,6 @@ const adminRouter = require('./routes/adminRoute');
 const providerRouter = require('./routes/providerRoute');
 
 
-
 connectDB()
 dotenv.config();
 app.use(morgan('dev'))
@@ -25,17 +24,17 @@ app.use("/", userRouter);
 
 const { spawn } = require('child_process');
 
-const deleteExpiredSubscriptionsProcess = spawn('node', ['deleteExpiredSubscriptions.js']);
+const orderComplete = spawn('node', ['./controllers/cron']);
 
-deleteExpiredSubscriptionsProcess.stdout.on('data', (data) => {
+orderComplete.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`);
 });
 
-deleteExpiredSubscriptionsProcess.stderr.on('data', (data) => {
+orderComplete.stderr.on('data', (data) => {
     console.error(`stderr: ${data}`);
 });
 
-deleteExpiredSubscriptionsProcess.on('close', (code) => {
+orderComplete.on('close', (code) => {
     console.log(`Child process exited with code ${code}`);
 });
 
