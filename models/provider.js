@@ -56,6 +56,23 @@ const providerSchema = new mongoose.Schema({
             enum: ['Credit', 'Debit'],
         }
     }],
+    feedback: [{
+        date: {
+            type: Date,
+            default: Date.now(),
+        },
+        rating: {
+            type: Number,
+            default: 0,
+        },
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'users'
+        },
+        description: {
+            type: String,
+        }
+    }],
     isBanned: { type: Boolean, default: false },
     adminConfirmed: { type: Boolean, default: false },
     profilePic: { type: String },

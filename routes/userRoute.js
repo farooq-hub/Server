@@ -3,10 +3,12 @@ const { signup,login, otpLogin,profileDetails,editUser} = require('../controller
 const { verifyTokenUser } = require('../middlewares/auth');
 
 const multer = require('../config/multer');
-const { providerList } = require('../controllers/provider');
+const { addFeedback, UserProviderList } = require('../controllers/provider');
 const { postsList, postLike, commentList, addComment, likeComment, deleteComment, postReport, allPost } = require('../controllers/posts');
 const { getOptionList } = require('../controllers/option');
 const { paymentModeHandle, paymentStatusHandle, getOrderLists, getOrderData, cancelOrder } = require('../controllers/order');
+const { fetchChats, getReceiverData, accessChat } = require('../controllers/chat');
+const { serviceList } = require('../controllers/service');
 const upload = multer.createMulter();
 
 const   userRouter = express.Router();
@@ -15,8 +17,9 @@ userRouter.post('/signup',signup);
 userRouter.post('/login',login);
 userRouter.post('/otpLogin',otpLogin);
 userRouter.get('/profile',verifyTokenUser,profileDetails);
-userRouter.get('/providersList',providerList)
+userRouter.get('/providersList',UserProviderList)
 
+userRouter.get('/service', serviceList)
 userRouter.patch('/editProfile',verifyTokenUser,upload.single('file'),editUser)
 userRouter.get('/all-Post',allPost)
 userRouter.route('/post')
@@ -42,7 +45,17 @@ userRouter.route('/orders')
     .post(verifyTokenUser,paymentModeHandle)
     .patch(verifyTokenUser,cancelOrder)
 
+userRouter.route('/feedback')
+    .post(verifyTokenUser,addFeedback)
+userRouter.route('/chat')
+    .get(verifyTokenUser,fetchChats)
 
+userRouter.get('/chat/receiver', verifyTokenUser, getReceiverData)
+userRouter.get('/chat/message', verifyTokenUser, accessChat)
+
+
+//     .post(verifyTokenUser,accessChat)
+//     .patch(verifyTokenUser,cancelOrder)
 
 
 

@@ -17,11 +17,14 @@ const getOrderLists =async (req,res) => {
     const { filter,skip,path,role } = req.query;
     let { id } = req.payload;
     let orderList = []
+    let limit = 10
+    if (path == '/profile' || path == '/dashboard') limit=5
+
     if(role == 'user'){
-      if(path =='/profile') orderList = await Order.find({customerId:id}).skip(skip).limit(5).populate({path: 'providerId',select: 'name'}).sort({ orderCreatedAt:1 });
+      if(path =='/profile') orderList = await Order.find({customerId:id}).limit(limit).populate({path: 'providerId',select: 'name'}).sort({ orderCreatedAt:-1 });
       else orderList = await Order.find({customerId:id}).populate({path: 'providerId',select: 'name'}).sort({ orderCreatedAt:1 });
-    }else if(role == 'provider')orderList = await Order.find({providerId:id}).skip(skip).limit(10).sort({ orderCreatedAt:1 });
-    else if(role == 'admin')orderList = await Order.find({}).skip(skip).limit(10).populate({path: 'providerId',select: 'name '}).sort({ orderCreatedAt:1 });
+    }else if(role == 'provider')orderList = await Order.find({providerId:id}).skip(skip).limit(limit).sort({ orderCreatedAt:1 });
+    else if(role == 'admin')orderList = await Order.find({}).skip(skip).limit(limit).populate({path: 'providerId',select: 'name '}).sort({ orderCreatedAt:-1 });
 
     // console.log(orderList,id);
     res.status(200).json({ orderList });
@@ -38,7 +41,7 @@ const getOrderData =async (req,res) => {
       const { id } = req.params;
       if(id){
           const orderData = await Order.findOne({_id:id})
-          .populate({path:'providerId',select: 'name phone email location'})
+          .populate({path:'providerId',select: 'name phone email location feedback'})
           .populate({
             path: 'options.optionId',
             populate :{
@@ -83,19 +86,21 @@ const paymentModeHandle = async (req, res) => {
                 price_data: {
                   currency: 'inr',
                   product_data: {
-                    name:'Total grand price',
+                    name: `Total grand price: ${orderDetails.grandTotal} INR `,
                     metadata: {
-                      id: orderDetails.option[0]._id
+                      id: orderDetails.option[0]._id,
+                      gandTotal: orderDetails.grandTotal
                     }
                   },
-                  unit_amount:  orderDetails.grandTotal * 100,
+                  unit_amount: orderDetails.grandTotal > 999999 ? 999999 * 100: orderDetails.grandTotal * 100,
                 },
                 quantity: 1,
               },
             ],
-            mode: 'payment',
-            success_url: `${process.env.SERVER_URL}/payment?${queryParams}`,
-            cancel_url: `${process.env.SERVER_URL}/payment?status=fail`,
+          mode: 'payment',
+          payment_method_types: ['card'],// Specify 'card' to allow credit card payments
+          success_url: `${process.env.SERVER_URL}/payment?${queryParams}`,
+          cancel_url: `${process.env.SERVER_URL}/payment?status=fail`,
           })
           res.send({ url: session.url })
       }
@@ -231,6 +236,8 @@ const verifyrzpay = async (req,res) => {
     res.status(500).json({message:'Server Failed'})
   }
 }
+
+ 
 
 
 

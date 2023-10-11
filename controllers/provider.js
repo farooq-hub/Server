@@ -31,7 +31,10 @@ const signup =async (req,res) => {
 const login = async (req,res)=>{
     try {
         const { phone, password } = req.body;
-        const provider = await Provider.findOne({phone}).populate('services');
+        const provider = await Provider.findOne({ phone }).populate('services').populate({
+            path: 'walletHistory.from',
+            select: 'name'
+        });
         if (!provider) return res.status(401).json({ errMsg: "Provider not found" });
         const passwordCheck =  provider.password == sha256(password + process.env.PASSWORD_SALT);
         if (!passwordCheck) return res.status(401).json({ errMsg: "Password doesn't match" });
@@ -80,17 +83,44 @@ const confirmProvider =async (req,res) => {
 
 const providerList =async (req,res)=>{
     try {
-        const providersData = await Provider.find().populate('services').sort({isUpgraded:-1});
-        console.log('');
+        const providersData = await Provider.find()
+            .populate('services', 'serviceName')
+            .select('-feedback -walletHistory -password -wallet -coverPic -profilePic')
+            .sort({ isUpgraded: -1 })
+
         res.status(200).json({providersData});
     } catch (error) {
+        console.log(error);
+
         res.status(504).json({ errMsg: "Gateway time-out" });
     }
 }
 
+const UserProviderList = async (req, res) => {
+    try {
+        const providersData = await Provider.find()
+            .populate('services')
+            .populate('feedback.userId','name image')
+            .select('-walletHistory -password -wallet')
+            .sort({ isUpgraded: -1 })
+
+        console.log(providersData);
+
+        res.status(200).json({ providersData });
+    } catch (error) {
+        console.log(error);
+
+        res.status(504).json({ errMsg: "Gateway time-out" });
+    }
+}
+
+
 const profileDetails = async (req,res)=>{
     try {
-        const providerData = await Provider.findOne({_id:req.payload.id}).populate('services');
+        const providerData = await Provider.findOne({ _id: req.payload.id }).populate('services').populate({
+            path: 'walletHistory.from',
+            select: 'name'
+        });
         console.log(providerData);
         providerData ? res.status(200).json({ providerData }) : res.status(400).json({ errMsg:'Provider not found'});
     } catch (error) {
@@ -185,6 +215,32 @@ const unBlockProvider =async (req,res)=>{
     }
 }
 
+const addFeedback = async (req, res) => {
+
+    try {
+        const { rating, feedback } = req.body;
+        const { providerId } = req.query
+        const { id } = req.payload;
+
+        console.log(rating, providerId, feedback, 'suyudfgsyjdfjhsfd')
+        if (rating && providerId && feedback) {
+            const date = new Date()
+            const review = {userId: id,date: date,description:feedback,rating:rating}
+            const addingFeedback = await Provider.updateOne({ _id: providerId }, {
+                $push: { feedback: review}});
+
+            addingFeedback ? res.status(200).json({ msg: 'Thank you for your feedback',feedback:review })
+                : res.status(500).json({ errMsg: "Server error" })
+
+        } else { res.status(402).json({ errMsg: "Somthing wrong", status: false }); }
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ errMsg: "Server error", status: false });
+    }
+
+} 
+
 
 module.exports = {
     signup,
@@ -192,8 +248,11 @@ module.exports = {
     otpLogin,
     confirmProvider,
     providerList,
+    UserProviderList,
     profileDetails,
     editProvider,
     blockProvider,
-    unBlockProvider
+    unBlockProvider,
+    addFeedback,
+
 }

@@ -6,7 +6,10 @@ const sha256 = require('js-sha256');
 const login = async (req,res)=>{
     try {
         const { phone, password } = req.body;
-        const admin = await Admin.findOne({ phone});
+        const admin = await Admin.findOne({ phone }).populate({
+            path: 'walletHistory.from',
+            select: 'name'
+        });
         if(phone&&password){
             if (!admin) return res.status(401).json({ errMsg: "Admin not found" });
             const passwordCheck =  admin.password == sha256(password + process.env.PASSWORD_SALT);
@@ -23,7 +26,23 @@ const login = async (req,res)=>{
     }
 }
 
+const profileDetails = async (req, res) => {
+    try {
+
+        const admin = await Admin.findOne({_id:req.payload.id }).populate({
+            path: 'walletHistory.from',
+            select: 'name'
+        });
+        if (admin)res.status(200).json({adminData: admin })
+        else res.status(400).json({ errMsg: 'somthig Wrong'})
+    } catch (error) {
+        res.status(504).json({ errMsg: "Gateway time-out" });
+    }
+}
+
+
 
 module.exports = {
-    login
+    login,
+    profileDetails
 }

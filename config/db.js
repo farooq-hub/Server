@@ -1,6 +1,10 @@
 const mongoose= require('mongoose')
 
 const mongoDB = "mongodb://127.0.0.1:27017/Event"
+// const dotenv = require("dotenv");
+// dotenv.config();
+
+// const mongoDB = process.env.DB_URL
 
 
 const connectDB = async()=>{
