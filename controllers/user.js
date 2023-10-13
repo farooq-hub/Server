@@ -102,7 +102,7 @@ const editUser = async (req,res)=>{
         console.log(file,image);
         const userData = await User.findByIdAndUpdate({_id:req.payload.id},{$set:{name:name,email:email,place:place,image:image}});
         console.log(userData);
-        userData ? res.status(200).json({msg:'Profile updated successfully', userData,image }) : res.status(400).json({ errMsg:'User not found'});
+        userData ? res.status(200).json({ msg: 'Profile updated successfully', userData: { name: name, email: email, place: place, image: image }}) : res.status(400).json({ errMsg:'User not found'});
     } catch (error) {
         if (fs.existsSync(file.path))fs.unlinkSync(file.path)
         res.status(504).json({ errMsg: "Gateway time-out" });
