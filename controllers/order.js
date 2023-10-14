@@ -100,7 +100,7 @@ const paymentModeHandle = async (req, res) => {
           mode: 'payment',
           payment_method_types: ['card'],// Specify 'card' to allow credit card payments
           success_url: `${process.env.SERVER_URL}/payment?${queryParams}`,
-          cancel_url: `${process.env.SERVER_URL}/payment?status=fail`,
+          cancel_url: `${process.env.CLIENT_URL}/payments?status=false`,
           })
           res.send({ url: session.url })
       }
@@ -149,7 +149,7 @@ const paymentStatusHandle = async(req,res)=>{
 
         }else return res.redirect(`${process.env.CLIENT_URL}/payments?status=false&`)
     }else{
-        return res.redirect(`${process.env.CLIENT_URL}/payments?status=false&`)
+        return res.redirect(`${process.env.CLIENT_URL}/payments?status=false`)
     }
   } catch (error) {
     res.redirect(`${process.env.CLIENT_URL}/payments?status=false`)
