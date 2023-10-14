@@ -7,14 +7,20 @@ const app = express();
 const userRouter = require('./routes/userRoute');
 const adminRouter = require('./routes/adminRoute');
 const providerRouter = require('./routes/providerRoute');
+const { spawn } = require('child_process');
 
+
+const corsOptions = {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+};
 
 connectDB()
 dotenv.config();
 app.use(morgan('dev'))
-// app.use(morgan('tiny'))
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 app.use("/provider", providerRouter);
 app.use("/admin", adminRouter);
@@ -22,7 +28,6 @@ app.use("/", userRouter);
 
  //CRON// 
 
-const { spawn } = require('child_process');
 
 const orderComplete = spawn('node', ['./controllers/cron']);
 
