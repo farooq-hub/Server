@@ -98,20 +98,35 @@ const providerList =async (req,res)=>{
 
 const UserProviderList = async (req, res) => {
     try {
-        const providersData = await Provider.find()
+        const { service, search, skip, place } = req.query;
+
+        const searchQuery = { name: { $regex: new RegExp(search, 'i') } }
+
+        const findQuery = {
+            adminConfirmed: true,
+            isBanned:false,
+            ...(isNaN(Number(search)) && searchQuery ),
+            ...(service !== 'All' && { services: { $in: service } }),
+            ...(place !== 'All' && { places: { $in: place } })
+        };
+        console.log(isNaN(Number(search)), search, findQuery);
+
+
+        const providersData = await Provider.find(findQuery).skip(skip).limit(6)
             .populate('services')
-            .populate('feedback.userId','name image')
+            .populate('feedback.userId', 'name image')
             .select('-walletHistory -password -wallet')
             .sort({ isUpgraded: -1 })
-
         console.log(providersData);
 
-        res.status(200).json({ providersData });
-    } catch (error) {
-        console.log(error);
 
-        res.status(504).json({ errMsg: "Gateway time-out" });
-    }
+        return providersData
+            ? res.status(200).json({ providersData })
+            : res.status(200).json({ msg: 'Provider not found' });
+    } catch (error) {
+        console.error(error.message);
+        return res.status(500).json({ error: 'Internal server error' });
+    } 
 }
 
 
