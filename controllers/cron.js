@@ -14,6 +14,6 @@ const OrderComplete = async () => {
     }
 };
 
-cron.schedule('0 0 * * *', () => {
+cron.schedule('0 18 * * *', () => {
     OrderComplete();
 });
